@@ -10,6 +10,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "screeps-api": "screeps-api"
+    "screeps-api": "*"
   }
 }
