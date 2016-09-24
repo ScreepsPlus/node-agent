@@ -1,0 +1,10 @@
+module.exports = {
+	screeps: {
+		username: 'screepsUsernameHere',
+		password: 'screepsPasswordHere'
+	},
+	service: {
+		url: 'https://screepspl.us',
+		token: 'apitoken'	// Token supplied upon account creation
+	}
+}
