@@ -1,5 +1,8 @@
 # ScreepsPlus node agent
 
+## Requirements
+Node.js 6+ 
+
 ## Setup
 
 1. Download
