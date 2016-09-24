@@ -3,6 +3,10 @@
   "version": "1.0.3",
   "description": "",
   "main": "app.js",
+  "repository":"https://github.com/ScreepsPlus/node-agent",
+  "engines":{
+    "node":">=6.5.0"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node app.js"
