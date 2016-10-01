@@ -1,3 +1,4 @@
+// Please set the configuration beow
 module.exports = {
 	screeps: {
 		username: 'screepsUsernameHere',
@@ -6,5 +7,7 @@ module.exports = {
 	service: {
 		url: 'https://screepspl.us',
 		token: 'apitoken'	// Token supplied upon account creation
-	}
+	},
+	checkForUpdates: true,
+	sampleConfig: true // REMOVE THIS LINE BEFORE RUNNING
 }
