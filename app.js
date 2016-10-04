@@ -9,6 +9,8 @@ let api = new ScreepsAPI()
 let config = {}
 let setupRan = false
 
+if(process.argv[2] == 'test') process.exit(0) // Placeholder ;)
+
 try{
   config = require(getConfigPath() || './config')
   start()

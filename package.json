@@ -5,14 +5,15 @@
   "main": "app.js",
   "repository": "https://github.com/ScreepsPlus/node-agent",
   "engines": {
-    "node": ">=6.5.0"
+    "node": ">=6.1.0"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app.js"
+    "test": "node app.js test",
+    "start": "node app.js",
+    "2npm":"publish"
   },
-  "bin":{
-    "screepsplus-agent":"app.js"
+  "bin": {
+    "screepsplus-agent": "app.js"
   },
   "author": "",
   "license": "ISC",
@@ -21,5 +22,8 @@
     "request": "^2.75.0",
     "screeps-api": "^0.2.4",
     "update-notifier": "^1.0.2"
+  },
+  "devDependencies": {
+    "publish": "^0.6.0"
   }
 }
