@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const fs = require('fs');
 const updateNotifier = require('update-notifier');
 const ScreepsAPI = require('screeps-api')
