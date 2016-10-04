@@ -8,7 +8,7 @@ Node.js 6+
 
 ### Prerequisites
 
-1. Token from [https://screepspl.us/agent](ScreepsPl.us)
+1. Token from [ScreepsPl.us](https://screepspl.us/agent)
 2. Screeps Login info
 3. Node + NPM
 
