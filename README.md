@@ -1,5 +1,8 @@
 # ScreepsPlus node agent
-![npm](https://nodei.co/npm/screepsplus-agent.png "NPM")
+
+[![NPM info][https://nodei.co/npm/screepsplus-agent.png?downloads=true]](https://npmjs.org/package/screepsplus-agent)
+
+[![Circle CI](https://circleci.com/gh/ScreepsPlus/node-agent.svg?style=shield)]((https://circleci.com/gh/ScreepsPlus/node-agent)
 
 ## Requirements
 Node.js 6+ 
