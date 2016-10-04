@@ -1,4 +1,4 @@
-// Please set the configuration beow
+// Please set the configuration below
 module.exports = {
 	screeps: {
 		username: 'screepsUsernameHere',
