@@ -1,8 +1,8 @@
 # ScreepsPlus node agent
 
-[![NPM info][https://nodei.co/npm/screepsplus-agent.png?downloads=true]](https://npmjs.org/package/screepsplus-agent)
+[![NPM info](https://nodei.co/npm/screepsplus-agent.png?downloads=true)](https://npmjs.org/package/screepsplus-agent)
 
-[![Circle CI](https://circleci.com/gh/ScreepsPlus/node-agent.svg?style=shield)]((https://circleci.com/gh/ScreepsPlus/node-agent)
+[![Circle CI](https://circleci.com/gh/ScreepsPlus/node-agent.svg?style=shield)](https://circleci.com/gh/ScreepsPlus/node-agent)
 
 ## Requirements
 Node.js 6+ 
@@ -42,3 +42,5 @@ screepsplus-agent
 
 ### Docker-compose
 A docker-compose.yml is included.
+
+[]
