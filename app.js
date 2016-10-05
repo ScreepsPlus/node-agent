@@ -6,26 +6,21 @@ const request = require('request')
 const editor = require('editor')
 const pkg = require('./package.json');
 let api = new ScreepsAPI()
-let config = {}
 let setupRan = false
 
 if(process.argv[2] == 'test') process.exit(0) // Placeholder ;)
 
-try{
-  config = require(getConfigPath() || './config')
+let {file,config} = loadConfig()
+if(config)
   start()
-}catch(e){
-  try{
-    config = require('./config')
-    start()
-  }catch(e){
-    setup()
-  }
-}
+else
+  setup()
 
 function start(){
-  if(config.sampleConfig || !config.screeps || !config.service)
+  if(config.sampleConfig || !config.screeps || !config.service){
+    console.log(file,"doe not have a valid config")
     return setup()
+  }
   if(config.checkForUpdates)
     updateNotifier({pkg}).notify();
   api.auth(config.screeps.username,config.screeps.password,(res)=>{
@@ -62,18 +57,13 @@ function pushStats(stats){
   })
 }
 
-function getConfigPath(){
-  if(process.platform == 'linux') return `${process.env.HOME}/.screepsplus-agent`
-  return ''
-}
-
 function setup(){
   if(setupRan){
     console.log('Agent not configured. Did you forget to edit the config?')
     process.exit()
   }
   setupRan = true
-  let path = getConfigPath()
+  let path = getConfigPaths().create
   if(path){
     fs.writeFileSync(path,fs.readFileSync(__dirname + '/config.js.sample'))
     editor(path,(code)=>{
@@ -82,4 +72,33 @@ function setup(){
   }else{
     console.log('Please setup config.js before running.')
   }
+}
+
+function getConfigPaths(){
+  let paths = [
+    './config'
+  ]
+  let create = ''
+  if(process.platform == 'linux'){
+    create = `${process.env.HOME}/.screepsplus-agent`
+    paths.push(create)
+    paths.push(`/etc/screepsplus-agent/config.js`)
+  }
+  create = ''
+  return { paths, create }
+}
+
+
+function loadConfig(){
+  let {paths} = getConfigPaths()
+  for(let i in paths){
+    let file = paths[i]
+    try{
+      // console.log('Try',file)
+      let config = require(file)
+      // console.log(config)
+      return { config, file }
+    }catch(e){}
+  }
+  return false
 }
