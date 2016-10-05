@@ -15,7 +15,12 @@ try{
   config = require(getConfigPath() || './config')
   start()
 }catch(e){
-  setup()
+  try{
+    config = require('./config')
+    start()
+  }catch(e){
+    setup()
+  }
 }
 
 function start(){
