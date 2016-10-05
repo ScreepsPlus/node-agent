@@ -44,6 +44,7 @@ function tick(){
 
 function pushStats(stats){
   if(!stats) return console.log('No stats found, is Memory.stats defined?')
+  if(config.showRawStats) console.log('Stats:',JSON.stringify(stats,null,3))
   console.log('Pushing stats')
   let sconfig = config.service
   request({

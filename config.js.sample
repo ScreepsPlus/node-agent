@@ -9,5 +9,6 @@ module.exports = {
 		token: 'apitoken'	// Token supplied upon account creation
 	},
 	checkForUpdates: true,
+	showRawStats: false, // This dumps stats to console on every push if enabled
 	sampleConfig: true // REMOVE THIS LINE BEFORE RUNNING
 }
