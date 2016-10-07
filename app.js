@@ -26,6 +26,7 @@ function start(){
   let memcnt = 0;
   let maxstats = 0;
   let lastmem = 0;
+  let notreceived = {}
   setInterval(()=>{
     if(lastmem + 1000 < Date.now())
     {
@@ -33,6 +34,11 @@ function start(){
         console.log('-------------------------------')
         console.log(`Received: ${memcnt}/${maxstats}`)
         console.log('===============================')
+        for(let k in notreceived){
+          notreceived[k]++
+          api.subscribe(`/memory/${k}`)
+          console.log('sub',k,'...',notreceived[k])
+        }
       }
       lastmem = Date.now()
       memcnt = 0;
@@ -50,6 +56,7 @@ function start(){
           maxstats = keys.length
           console.log('Keys',keys.length, keys)
           keys.forEach(k=>{
+            notreceived[k] = 0
             console.log('sub',k,'...')
             api.subscribe(`/memory/${k}`)
           })
@@ -60,6 +67,8 @@ function start(){
   api.on('memory',msg=>{
     memcnt++
     let [user,data] = msg
+    let [userid,key,value] = user.split('/')
+    delete notreceived[value]
     console.log(user,data)
   })
 }
