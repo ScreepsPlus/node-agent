@@ -23,37 +23,44 @@ function start(){
   }
   if(config.checkForUpdates)
     updateNotifier({pkg}).notify();
+  let memcnt = 0;
+  let maxstats = 0;
+  let lastmem = 0;
+  setInterval(()=>{
+    if(lastmem + 1000 < Date.now())
+    {
+      if(memcnt){
+        console.log('-------------------------------')
+        console.log(`Received: ${memcnt}/${maxstats}`)
+        console.log('===============================')
+      }
+      lastmem = Date.now()
+      memcnt = 0;
+    }    
+  },800)
   api.auth(config.screeps.username,config.screeps.password,(res)=>{
     console.log(res,'Authenticated')
-    tick()
-    setInterval(tick,15000)
-  })
-}
-function tick(){
-  Promise.resolve()
-    .then(()=>console.log('Fetching Stats'))
-    .then(()=>api.memory.get('stats'))
-    .then(pushStats)
-    .catch(err=>console.error(err))
-}
-
-function pushStats(stats){
-  if(!stats) return console.log('No stats found, is Memory.stats defined?')
-  if(config.showRawStats) console.log('Stats:',JSON.stringify(stats,null,3))
-  console.log('Pushing stats')
-  let sconfig = config.service
-  request({
-    method: 'POST',
-    url: sconfig.url + '/api/stats/submit',
-    auth: {
-      user: 'token',
-      pass: sconfig.token
-    },
-    json: true,
-    body: stats
-  },(err,res,data)=>{
-    console.log('Result:',data)
-    if(err) console.error(err)
+    api.socket(()=>{})
+    api.on('message', (msg) => {
+      if (msg.slice(0, 7) == 'auth ok') {
+        api.subscribe('/console')
+        api.memory.get('stats').then(stats=>{
+          stats = flattenObj({},'stats',stats)
+          let keys = Object.keys(stats)
+          maxstats = keys.length
+          console.log('Keys',keys.length, keys)
+          keys.forEach(k=>{
+            console.log('sub',k,'...')
+            api.subscribe(`/memory/${k}`)
+          })
+        })
+      }
+    })
+  })  
+  api.on('memory',msg=>{
+    memcnt++
+    let [user,data] = msg
+    console.log(user,data)
   })
 }
 
@@ -101,4 +108,14 @@ function loadConfig(){
     }catch(e){}
   }
   return false
+}
+
+function flattenObj (ret, path, obj) {
+  if (typeof obj == 'object'){
+    for (let k in obj)
+      flattenObj(ret, `${path}.${k}`, obj[k])
+  }
+  else
+    ret[path] = obj
+  return ret
 }
