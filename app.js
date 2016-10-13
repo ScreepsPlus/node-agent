@@ -1,104 +1,90 @@
-#!/usr/bin/env node
-const fs = require('fs');
-const updateNotifier = require('update-notifier');
+"use strict"
 const ScreepsAPI = require('screeps-api')
 const request = require('request')
-const editor = require('editor')
-const pkg = require('./package.json');
 let api = new ScreepsAPI()
-let setupRan = false
 
-if(process.argv[2] == 'test') process.exit(0) // Placeholder ;)
+let config = require('./config')
 
-let {file,config} = loadConfig()
-if(config)
-  start()
-else
-  setup()
-
-function start(){
-  if(config.sampleConfig || !config.screeps || !config.service){
-    console.log(file,"doe not have a valid config")
-    return setup()
-  }
-  if(config.checkForUpdates)
-    updateNotifier({pkg}).notify();
-  api.auth(config.screeps.username,config.screeps.password,(res)=>{
-    console.log(res,'Authenticated')
-    tick()
-    setInterval(tick,15000)
-  })
-}
-function tick(){
+exports.screepsStats = function(event,context,callback){
+  api.email = config.screeps.username
+  api.password = config.screeps.password
   Promise.resolve()
-    .then(()=>console.log('Fetching Stats'))
-    .then(()=>api.memory.get('stats'))
-    .then(pushStats)
-    .catch(err=>console.error(err))
+    .then(ensureToken)
+    .then(stats)
+    .then((res)=>{
+      callback(null)
+      context.done()
+    }).catch(err=>{
+      context.done(err.stack || err.message || err.msg)
+    })
 }
 
-function pushStats(stats){
-  if(!stats) return console.log('No stats found, is Memory.stats defined?')
-  if(config.showRawStats) console.log('Stats:',JSON.stringify(stats,null,3))
-  console.log('Pushing stats')
-  let sconfig = config.service
-  request({
-    method: 'POST',
-    url: sconfig.url + '/api/stats/submit',
-    auth: {
-      user: 'token',
-      pass: sconfig.token
-    },
-    json: true,
-    body: stats
-  },(err,res,data)=>{
-    console.log('Result:',data)
-    if(err) console.error(err)
+function ensureToken(){
+  if(!api.token)
+    return api.getToken()
+  else
+    return Promise.resolve()
+}
+
+function stats(){
+  console.log('Fetching')
+  return Promise.all([
+    api.memory.get('statsPerTick'),
+    api.memory.get('statsPerTickLast')
+  ]).then(d=>{
+    let spt = d[0]
+    let last = d[1]
+    spt = spt.filter(s=>s && s.tick && s.tick > last)
+    let nlast = Math.max.apply(null,spt.map(s=>s.tick))
+    console.log('Stats:',spt.length)
+    console.log('From:',last)
+    console.log('To:',nlast)
+    return Promise.all([
+      api.memory.set('statsPerTickLast',nlast),
+      saveStats(spt)
+    ])
+  }).then((res)=>{
+    console.log('Done')
+    return res
   })
 }
 
-function setup(){
-  if(setupRan){
-    console.log('Agent not configured. Did you forget to edit the config?')
-    process.exit()
+function saveStats(spt){
+  let payload = []
+  spt.forEach(s=>{
+    let stats = flattenObj({},'screeps',s.stats)
+    for(let k in stats){
+      payload.push(`${k} value=${stats[k]} ${s.time}000000`)
+    }
+  })
+  let promises = []
+  while(payload.length){
+    promises.push(submitToInfluxDB(payload.splice(0,5000).join("\n")))
   }
-  setupRan = true
-  let path = getConfigPaths().create
-  if(path){
-    fs.writeFileSync(path,fs.readFileSync(__dirname + '/config.js.sample'))
-    editor(path,(code)=>{
-      if(!code) start()
+  return Promise.all(promises)
+}
+
+function submitToInfluxDB(payload){
+  // console.log(payload)
+  return new Promise((resolve,reject)=>{
+    request({
+      url: `${config.influxdb.url}/write?db=${config.influxdb.database}` ,
+      method: 'POST',
+      body: payload,
+      auth: config.influxdb.auth || undefined
+    },(err,res,body)=>{
+      if(err) return reject(err)
+      resolve(body)
     })
-  }else{
-    console.log('Please setup config.js before running.')
-  }
+  })
 }
 
-function getConfigPaths(){
-  let paths = [
-    './config'
-  ]
-  let create = ''
-  if(process.platform == 'linux'){
-    create = `${process.env.HOME}/.screepsplus-agent`
-    paths.push(create)
-    paths.push(`/etc/screepsplus-agent/config.js`)
-  }
-  create = ''
-  return { paths, create }
+function flattenObj (ret, path, obj) {
+  if (typeof obj == 'object')
+    for (let k in obj)
+      flattenObj(ret, `${path}.${k}`, obj[k])
+  else
+    ret[path] = obj
+  return ret
 }
 
-
-function loadConfig(){
-  let {paths} = getConfigPaths()
-  for(let i in paths){
-    let file = paths[i]
-    try{
-      // console.log('Try',file)
-      let config = require(file)
-      // console.log(config)
-      return { config, file }
-    }catch(e){}
-  }
-  return false
-}
