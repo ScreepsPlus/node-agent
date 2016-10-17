@@ -52,6 +52,12 @@ function pushStats(stats){
     json: true,
     body: stats
   },(err,res,data)=>{
+    if(res.statusCode == 413){
+      let len = Math.round(JSON.stringify(stats).length/1024)
+      console.log(`stats size: ${len}kb`)
+      console.log(`stats limit: 20kb (As of Oct 17, 2016)`)
+      console.error(`It appears your stats data is too large, please check to make sure you are not submitting unneeded stats, such as old rooms. \n If you legitimately need to submit stats this large, contact ags131 on slack for a limit bump`)
+    }
     console.log('Result:',data)
     if(err) console.error(err)
   })
