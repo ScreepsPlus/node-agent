@@ -1,110 +1,73 @@
-#!/usr/bin/env node
-const fs = require('fs');
-const updateNotifier = require('update-notifier');
+"use strict"
 const ScreepsAPI = require('screeps-api')
 const request = require('request')
-const editor = require('editor')
-const pkg = require('./package.json');
 let api = new ScreepsAPI()
-let setupRan = false
 
-if(process.argv[2] == 'test') process.exit(0) // Placeholder ;)
+let config = require('./config')
 
-let {file,config} = loadConfig()
-if(config)
-  start()
-else
-  setup()
-
-function start(){
-  if(config.sampleConfig || !config.screeps || !config.service){
-    console.log(file,"doe not have a valid config")
-    return setup()
-  }
-  if(config.checkForUpdates)
-    updateNotifier({pkg}).notify();
-  api.auth(config.screeps.username,config.screeps.password,(res)=>{
-    console.log(res,'Authenticated')
-    tick()
-    setInterval(tick,15000)
-  })
-}
-function tick(){
+exports.marketStats = function(event,context,callback){
+  api.email = config.screeps.username
+  api.password = config.screeps.password
   Promise.resolve()
-    .then(()=>console.log('Fetching Stats'))
-    .then(()=>api.memory.get('stats'))
-    .then(pushStats)
-    .catch(err=>console.error(err))
-}
-
-function pushStats(stats){
-  if(!stats) return console.log('No stats found, is Memory.stats defined?')
-  if(config.showRawStats) console.log('Stats:',JSON.stringify(stats,null,3))
-  console.log('Pushing stats')
-  let sconfig = config.service
-  request({
-    method: 'POST',
-    url: sconfig.url + '/api/stats/submit',
-    auth: {
-      user: 'token',
-      pass: sconfig.token
-    },
-    json: true,
-    body: stats
-  },(err,res,data)=>{
-    if(res.statusCode == 413){
-      let len = Math.round(JSON.stringify(stats).length/1024)
-      console.log(`stats size: ${len}kb`)
-      console.log(`stats limit: 20kb (As of Oct 17, 2016)`)
-      console.error(`It appears your stats data is too large, please check to make sure you are not submitting unneeded stats, such as old rooms. \n If you legitimately need to submit stats this large, contact ags131 on slack for a limit bump`)
-    }
-    console.log('Result:',data)
-    if(err) console.error(err)
-  })
-}
-
-function setup(){
-  if(setupRan){
-    console.log('Agent not configured. Did you forget to edit the config?')
-    process.exit()
-  }
-  setupRan = true
-  let path = getConfigPaths().create
-  if(path){
-    fs.writeFileSync(path,fs.readFileSync(__dirname + '/config.js.sample'))
-    editor(path,(code)=>{
-      if(!code) start()
+    .then(ensureToken)
+    .then(stats)
+    .then((res)=>{
+      callback(null,res)
+      context.done()
+    }).catch(err=>{
+      context.done(err.stack || err.message || err.msg)
     })
-  }else{
-    console.log('Please setup config.js before running.')
-  }
 }
 
-function getConfigPaths(){
-  let paths = [
-    './config'
-  ]
-  let create = ''
-  if(process.platform == 'linux'){
-    create = `${process.env.HOME}/.screepsplus-agent`
-    paths.push(create)
-    paths.push(`/etc/screepsplus-agent/config.js`)
-  }
-  create = ''
-  return { paths, create }
+function ensureToken(){
+  if(!api.token)
+    return api.getToken()
+  else
+    return Promise.resolve()
 }
 
+function stats(){
+  console.log('Fetching')
+  let resources = require('./resources').RESOURCES_ALL
+  return Promise.all(resources.map(res=>api.market.stats(res)))
+    .then(saveStats)
+    .then((res)=>{
+      console.log('Done')
+      return res
+    })
+}
 
-function loadConfig(){
-  let {paths} = getConfigPaths()
-  for(let i in paths){
-    let file = paths[i]
-    try{
-      // console.log('Try',file)
-      let config = require(file)
-      // console.log(config)
-      return { config, file }
-    }catch(e){}
+function saveStats(stats){
+  let payload = []
+  let now = Date.now()
+  stats.forEach(stat=>{
+    stat.forEach(s=>{
+      let ma = s.date.match(/^([0-9]+)-([0-9]+)-([0-9]+)$/)
+      let y = ma[1]
+      let m = ma[2]
+      let d = ma[3]
+      let ts = new Date(y,m-1,d,0,0,0)
+      payload.push(`stats,date=${s.date},type=${s.resourceType} avgPrice=${s.avgPrice},stddevPrice=${s.stddevPrice},transactions=${s.transactions},volume=${s.volume} ${ts.getTime()}000000`)      
+    })
+  })
+  let promises = []
+  while(payload.length){
+    promises.push(submitToInfluxDB(payload.splice(0,5000).join("\n")))
   }
-  return false
+  return Promise.all(promises)
+}
+
+function submitToInfluxDB(payload){
+  // console.log(payload)
+  return new Promise((resolve,reject)=>{
+    request({
+      url: `${config.influxdb.url}/write?db=${config.influxdb.database}` ,
+      method: 'POST',
+      body: payload,
+      auth: config.influxdb.auth || undefined
+    },(err,res,body)=>{
+      if(err) return reject(err)
+      resolve(body)
+    })
+  })
 }

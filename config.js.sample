@@ -1,14 +1,15 @@
 // Please set the configuration below
 module.exports = {
 	screeps: {
-		username: 'screepsUsernameHere',
-		password: 'screepsPasswordHere'
+		username: 'screepsUsername',
+		password: 'screepsPassword'
 	},
-	service: {
-		url: 'https://screepspl.us',
-		token: 'apitoken'	// Token supplied upon account creation
-	},
-	checkForUpdates: true,
-	showRawStats: false, // This dumps stats to console on every push if enabled
-	sampleConfig: true // REMOVE THIS LINE BEFORE RUNNING
+	influxdb: {
+		url: 'http://163.172.183.243:8086', // Current testing URL
+		database: 'influxDB Database name', 
+		auth: {
+			user: 'influx User',
+			pass: 'influx Pass'
+		}
+	}
 }
