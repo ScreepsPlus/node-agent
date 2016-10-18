@@ -28,8 +28,11 @@ function ensureToken(){
 
 function stats(){
   console.log('Fetching')
-  let resources = require('./resources').RESOURCES_ALL
-  return Promise.all(resources.map(res=>api.market.stats(res)))
+  let resources = require('./resources')
+  let res = []
+  for(let k in resources)
+    res.push(resources[k])
+  return Promise.all(res.map(res=>api.market.stats(res)))
     .then(saveStats)
     .then((res)=>{
       console.log('Done')
