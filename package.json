@@ -1,6 +1,6 @@
 {
   "name": "screepsplus-agent",
-  "version": "1.0.12",
+  "version": "1.1.0",
   "description": "",
   "main": "app.js",
   "repository": "https://github.com/ScreepsPlus/node-agent",
@@ -10,7 +10,7 @@
   "scripts": {
     "test": "node test.js",
     "start": "node app.js",
-    "bundle": "zip -r lambda-market-stats.zip node_modules app.js config.js resources.js"
+    "bundle": "zip -r lambda-stats.zip node_modules index.js config.js resources.js"
   },
   "author": "",
   "license": "ISC",

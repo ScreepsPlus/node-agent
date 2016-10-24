@@ -2,7 +2,9 @@
 module.exports = {
 	screeps: {
 		username: 'screepsUsername',
-		password: 'screepsPassword'
+		password: 'screepsPassword',
+		perTick: false, // Requires extra code screeps side, see Section A below for details,
+		statsFormat: 'kv', // For future use ;)
 	},
 	influxdb: {
 		url: 'http://163.172.183.243:8086', // Current testing URL
@@ -13,3 +15,32 @@ module.exports = {
 		}
 	}
 }
+
+
+/**
+================================
+===== Per-Tick stats setup =====
+================================
+Add the following function to your code and call at the end
+of your main after Memory.stats is populated
+
+function perTickStats(){
+  const MAX_STATS = 50
+  // adjust as needed, the higher your agent polling interval, the higher this needs to be
+  // Ex: 15s polling needs ~8 stats to be able to handle 2s ticks, so a safe value would be 10
+  // I use 50 since my AWS Lambda agent only polls once a minute.
+  Memory.statsPerTickIndex = (Memory.statsPerTickIndex || 0) % MAX_STATS
+  let spr = Memory.statsPerTick
+  let spri = Memory.statsPerTickIndex++
+  if(!spr){
+    spr = Memory.statsPerTick = []
+  }
+  while(spr.length < MAX_STATS) spr.push(null)
+  if(spr.length > MAX_STATS) spr.splice(0,spr.length - MAX_STATS)
+  spr[spri] = {
+    tick: Game.time,
+    time: Date.now(),
+    stats: Memory.stats
+  }
+}
+**/

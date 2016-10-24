@@ -1,76 +1,71 @@
-"use strict"
-const ScreepsAPI = require('screeps-api')
+#!/usr/bin/env node
+const fs = require('fs');
+const updateNotifier = require('update-notifier');
 const request = require('request')
-let api = new ScreepsAPI()
+const editor = require('editor')
+const pkg = require('./package.json');
+let setupRan = false
 
-let config = require('./config')
+if(process.argv[2] == 'test') process.exit(0) // Placeholder ;)
 
-exports.marketStats = function(event,context,callback){
-  api.email = config.screeps.username
-  api.password = config.screeps.password
-  Promise.resolve()
-    .then(ensureToken)
-    .then(stats)
-    .then((res)=>{
-      callback(null,res)
-      context.done()
-    }).catch(err=>{
-      context.done(err.stack || err.message || err.msg)
-    })
-}
+let {file,config} = loadConfig()
+if(config)
+  start()
+else
+  setup()
 
-function ensureToken(){
-  if(!api.token)
-    return api.getToken()
-  else
-    return Promise.resolve()
-}
-
-function stats(){
-  console.log('Fetching')
-  let resources = require('./resources')
-  let res = []
-  for(let k in resources)
-    res.push(resources[k])
-  return Promise.all(res.map(res=>api.market.stats(res)))
-    .then(saveStats)
-    .then((res)=>{
-      console.log('Done')
-      return res
-    })
-}
-
-function saveStats(stats){
-  let payload = []
-  let now = Date.now()
-  stats.forEach(stat=>{
-    stat.forEach(s=>{
-      let ma = s.date.match(/^([0-9]+)-([0-9]+)-([0-9]+)$/)
-      let y = ma[1]
-      let m = ma[2]
-      let d = ma[3]
-      let ts = new Date(y,m-1,d,0,0,0)
-      payload.push(`stats,date=${s.date},type=${s.resourceType} avgPrice=${s.avgPrice},stddevPrice=${s.stddevPrice},transactions=${s.transactions},volume=${s.volume} ${ts.getTime()}000000`)      
-    })
-  })
-  let promises = []
-  while(payload.length){
-    promises.push(submitToInfluxDB(payload.splice(0,5000).join("\n")))
+function start(){
+  if(config.sampleConfig || !config.screeps){
+    console.log(file,"doe not have a valid config")
+    return setup()
   }
-  return Promise.all(promises)
+  if(config.checkForUpdates)
+    updateNotifier({pkg}).notify();
+  setInterval(()=>require('./index').screepsStats(),15000)
+}
+function setup(){
+  if(setupRan){
+    console.log('Agent not configured. Did you forget to edit the config?')
+    process.exit()
+  }
+  setupRan = true
+  let path = getConfigPaths().create
+  if(path){
+    fs.writeFileSync(path,fs.readFileSync(__dirname + '/config.js.sample'))
+    editor(path,(code)=>{
+      if(!code) start()
+    })
+  }else{
+    console.log('Please setup config.js before running.')
+  }
 }
 
-function submitToInfluxDB(payload){
-  // console.log(payload)
-  return new Promise((resolve,reject)=>{
-    request({
-      url: `${config.influxdb.url}/write?db=${config.influxdb.database}` ,
-      method: 'POST',
-      body: payload,
-      auth: config.influxdb.auth || undefined
-    },(err,res,body)=>{
-      if(err) return reject(err)
-      resolve(body)
-    })
-  })
+function getConfigPaths(){
+  let paths = [
+    './config'
+  ]
+  let create = ''
+  if(process.platform == 'linux'){
+    // create = `${process.env.HOME}/.screepsplus-agent`
+    // paths.push(create)
+    create = './config.js'
+    // paths.push(`/etc/screepsplus-agent/config.js`)
+  }
+  // create = ''
+  return { paths, create }
+}
+
+
+function loadConfig(){
+  let {paths} = getConfigPaths()
+  for(let i in paths){
+    let file = paths[i]
+    try{
+      // console.log('Try',file)
+      let config = require(file)
+      // console.log(config)
+      return { config, file }
+    }catch(e){}
+  }
+  return false
 }
