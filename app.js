@@ -52,7 +52,7 @@ function pushStats(stats){
     json: true,
     body: stats
   },(err,res,data)=>{
-    if(res.statusCode == 413){
+    if(res && res.statusCode == 413){
       let len = Math.round(JSON.stringify(stats).length/1024)
       console.log(`stats size: ${len}kb`)
       console.log(`stats limit: 20kb (As of Oct 17, 2016)`)
