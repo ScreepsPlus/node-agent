@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const fs = require('fs');
+const path = require('path');
 const updateNotifier = require('update-notifier');
 const ScreepsAPI = require('screeps-api')
 const request = require('request')
@@ -77,23 +78,34 @@ function setup(){
     })
   }else{
     console.log('Please setup config.js before running.')
+    console.log(`Valid paths for your platform (${process.platform}):`)
+    getConfigPaths().paths.forEach(path=>console.log(`- ${path}`))
+    console.log()
+    console.log('Or set the AGENT_CONFIG_PATH environment variable to point to a valid config file.')
   }
 }
 
 function getConfigPaths(){
-  let paths = [
-    './config'
-  ]
+  let appname = 'screepsplus-agent'
+  let paths = []
+  if(process.env.AGENT_CONFIG_PATH)
+    paths.push(process.env.AGENT_CONFIG_PATH)
+  paths.push(path.join(__dirname,'config.js'))
   let create = ''
   if(process.platform == 'linux'){
-    create = `${process.env.HOME}/.screepsplus-agent`
+    create = `${process.env.HOME}/.${appname}`
     paths.push(create)
-    paths.push(`/etc/screepsplus-agent/config.js`)
+    paths.push(`/etc/${appname}/config.js`)
+  }
+  if(process.platform == 'win32'){
+    let dir = path.join(process.env.APPDATA,appname)
+    try{ fs.mkdirSync(dir) }catch(e){}
+    fs.writeFileSync(path.join(dir,'config.js'),fs.readFileSync(path.join(__dirname,'config.js.sample')))
+    paths.push(path.join(dir,'config.js'))
   }
   create = ''
   return { paths, create }
 }
-
 
 function loadConfig(){
   let {paths} = getConfigPaths()
