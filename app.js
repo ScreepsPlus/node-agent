@@ -30,10 +30,33 @@ function start(){
     setInterval(tick,15000)
   })
 }
+function mergeProfileAndStats(stats, data){
+  if(data){
+    stats.credits = data.money;
+    stats.power = data.power;
+  }
+  return stats;
+}
+function addProfileData(api, stats){
+    return new Promise(resolve => api.me((err, data) => resolve(mergeProfileAndStats(stats, data))));
+}
+function mergeLeaderboardAndStats(stats, data){
+    if(data && data.length){
+        data = data[data.length];
+        stats.gclRank = data.rank+1;
+    }
+    return stats;
+}
+function addLeaderboardData(api, stats){
+    let leaderboardUrl = `https://screeps.com/api/leaderboard/find?mode=world&username=${api.user.username}`;
+    return new Promise(resolve => request(leaderboardUrl,(err, response, data) => resolve(mergeLeaderboardAndStats(stats, data))));
+}
 function tick(){
   Promise.resolve()
     .then(()=>console.log('Fetching Stats'))
     .then(()=>api.memory.get('stats'))
+    .then(stats=>addProfileData(api, stats))
+    .then(stats=>addLeaderboardData(api, stats))
     .then(pushStats)
     .catch(err=>console.error(err))
 }
