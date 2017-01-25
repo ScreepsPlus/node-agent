@@ -42,7 +42,7 @@ function addProfileData(api, stats){
 }
 function mergeLeaderboardAndStats(stats, data){
     if(data && data.length){
-        data = data[data.length];
+        data = data[data.length-1];
         stats.gclRank = data.rank+1;
     }
     return stats;
