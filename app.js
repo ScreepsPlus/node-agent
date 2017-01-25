@@ -41,8 +41,8 @@ function addProfileData(api, stats){
     return new Promise(resolve => api.me((err, data) => resolve(mergeProfileAndStats(stats, data))));
 }
 function mergeLeaderboardAndStats(stats, data){
-    if(data && data.length){
-        data = data[data.length-1];
+    if(data && data.body && data.body.list){
+        data = data.body.list[data.body.list.length-1];
         stats.gclRank = data.rank+1;
     }
     return stats;
