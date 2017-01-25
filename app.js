@@ -49,7 +49,7 @@ function mergeLeaderboardAndStats(stats, data){
 }
 function addLeaderboardData(api, stats){
     let leaderboardUrl = `https://screeps.com/api/leaderboard/find?mode=world&username=${api.user.username}`;
-    return new Promise(resolve => api.req(leaderboardUrl,(err, response, data) => resolve(mergeLeaderboardAndStats(stats, data))));
+    return new Promise(resolve => api.req('GET', leaderboardUrl, null, (err, data) => resolve(mergeLeaderboardAndStats(stats, data))));
 }
 function tick(){
   Promise.resolve()
