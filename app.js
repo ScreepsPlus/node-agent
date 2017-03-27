@@ -25,23 +25,68 @@ function start(){
     updateNotifier({pkg}).notify();
   api.auth(config.screeps.username,config.screeps.password,(res)=>{
     console.log(res,'Authenticated')
-    tick()
-    setInterval(tick,15000)
+    if(config.screeps.method == 'console')
+      beginConsoleStats()
+    else
+      beginMemoryStats()
   })
 }
+
+function beginConsoleStats(){
+  api.socket()
+  api.on('message',msg=>{
+    if(msg.startsWith('auth ok')){
+      api.subscribe('/console')
+      console.log('subscribed to console')
+    }
+  })
+  api.on('console',(raw)=>{
+    let [user,data] = raw
+    if(data.messages && data.messages.log)
+      data.messages.log
+        .filter(l=>l.startsWith('STATS'))
+        .forEach(log=>{
+          let ret = formatStats(log)
+          pushStats(ret.type,ret.stats)
+        })
+  })
+}
+
+function formatStats(data){
+  if(data[0] == '{' || data[0] == '[')
+    return { 
+      type: 'application/json',
+      stats: data
+    }
+  let [header,type,tick,time,...stats] = data.split(";")
+  if(type.startsWith('text')){
+    stats = stats.map(s=>`${s} ${time}`).join("\n")
+  }
+  return { header,type,tick,time,stats }
+}
+
+function beginMemoryStats(){
+  tick()
+  setInterval(tick,15000)
+}
+
 function tick(){
   Promise.resolve()
     .then(()=>console.log('Fetching Stats'))
     .then(()=>api.memory.get('stats'))
-    .then(pushStats)
+    .then((stats)=>{
+      let ret = formatStats(stats)
+      pushStats(ret.type,ret.stats)
+    })
     .catch(err=>console.error(err))
 }
 
-function pushStats(stats){
+function pushStats(type,stats){
   if(!stats) return console.log('No stats found, is Memory.stats defined?')
   if(config.showRawStats) console.log('Stats:',JSON.stringify(stats,null,3))
   console.log('Pushing stats')
   let sconfig = config.service
+  if(type == 'application/json') stats = JSON.stringify(stats)
   request({
     method: 'POST',
     url: sconfig.url + '/api/stats/submit',
@@ -49,7 +94,9 @@ function pushStats(stats){
       user: 'token',
       pass: sconfig.token
     },
-    json: true,
+    headers:{
+      'content-type':type
+    },
     body: stats
   },(err,res,data)=>{
     if(res.statusCode == 413){

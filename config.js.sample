@@ -2,7 +2,8 @@
 module.exports = {
 	screeps: {
 		username: 'screepsUsernameHere',
-		password: 'screepsPasswordHere'
+		password: 'screepsPasswordHere',
+		method: 'memory.stats' // Valid Options: 'console' 'memory.stats'
 	},
 	service: {
 		url: 'https://screepspl.us',
