@@ -52,7 +52,7 @@ function beginConsoleStats(){
 }
 
 function formatStats(data){
-  if(data[0] == '{' || data[0] == '[')
+  if(typeof data == 'object')
     return { 
       type: 'application/json',
       stats: data
@@ -90,8 +90,7 @@ function addLeaderboardData(stats){
     return api.req('GET', leaderboardUrl).then(res=>{
       let { rank, score } = res.body.list.slice(-1)[0];
       if(stats.type == 'application/json'){
-        stats.stats.leaderboard.rank = rank
-        stats.stats.leaderboard.score = score
+        stats.stats.leaderboard = { rank, score }
       }
       if(stats.type == 'text/grafana'){
         stats.stats += `leaderboard.rank ${rank} ${Date.now()}\n`
@@ -114,8 +113,8 @@ function tick(){
 function processStats(data){
   return Promise.resolve(data)
     .then(formatStats)
-    .then(addLeaderboardData)
     .then(addProfileData)
+    .then(addLeaderboardData)
     .then(pushStats)
 }
 
