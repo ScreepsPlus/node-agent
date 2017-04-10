@@ -46,7 +46,9 @@ A docker-compose.yml is included.
 ### Config Methods
 It is now possible to use the console to output stats, just set method to 'console' in config.js
 and use `console.log('STATS;'+formattedStats)`
-For this type based format is REQUIRED
+
+For this to work, type based format is REQUIRED
+
 NOTE: you should use `';'` instead of newLine (`"\n"`) as a delimiter
 
 ## Stat formats supported by ScreepsPl.us:
@@ -76,14 +78,19 @@ time
 followed by the raw stat data
 
 For ScreepsPl.us, type can be one of 3 values: 'text/grafana' 'text/influxdb' 'application/json'
+
 Where `application/json` inserts into graphite.
 
 #### text/grafana Format
+
 1 stat per line: `stat value`
+
 EX: `room.W0N0.level 5`
 
 #### text/influxdb Format
+
 1 stat per line: `stat[,tag1=value,tag2=value,...] key=value[,key=value,...]`
+
 EX: `room,name=W0N0 level=5,energy=300,energyCapacity=300`
 
 NOTE: as of this writing this README, influxdb support is enabled, but cannot be accessed without requesting influxdb credentials
