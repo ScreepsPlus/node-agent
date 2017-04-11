@@ -105,7 +105,7 @@ function addLeaderboardData(stats){
 function tick(){
   Promise.resolve()
     .then(()=>console.log('Fetching Stats'))
-    .then(()=>api.memory.get('stats'))
+    .then(getStats)
     .then(processStats)
     .catch(err=>console.error(err))
 }
@@ -116,6 +116,14 @@ function processStats(data){
     .then(addProfileData)
     .then(addLeaderboardData)
     .then(pushStats)
+}
+
+function getStats(){
+    if(config.screeps.segment) {
+        return api.req('GET',`/api/user/memory-segment?segment=${config.screeps.segment}`).then(res=>JSON.parse(res.body.data));
+    } else {
+        return api.memory.get('stats');
+    }
 }
 
 function pushStats(data){

@@ -3,7 +3,8 @@ module.exports = {
 	screeps: {
 		username: 'screepsUsernameHere',
 		password: 'screepsPasswordHere',
-		method: 'memory.stats' // Valid Options: 'console' 'memory.stats'
+		method: 'memory.stats', // Valid Options: 'console' 'memory.stats'
+//		segment: 99 // Uncomment this line and specify segment id if you're placing stats into segment
 	},
 	service: {
 		url: 'https://screepspl.us',
