@@ -192,7 +192,9 @@ function getConfigPaths(){
   if(process.platform == 'win32'){
     let dir = path.join(process.env.APPDATA,appname)
     try{ fs.mkdirSync(dir) }catch(e){}
-    fs.writeFileSync(path.join(dir,'config.js'),fs.readFileSync(path.join(__dirname,'config.js.sample')))
+    if(!fs.existsSync(path.join(dir,'config.js')){
+      fs.writeFileSync(path.join(dir,'config.js'),fs.readFileSync(path.join(__dirname,'config.js.sample')))
+    }
     paths.push(path.join(dir,'config.js'))
   }
   create = ''
