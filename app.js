@@ -70,7 +70,7 @@ function beginMemoryStats(){
 }
 function addProfileData(stats){
     return api.me().then(res=>{
-      let credits = res.body.credits || 0
+      let credits = res.body.money || 0
       let power = res.body.power || 0
       if(stats.type == 'application/json'){
         stats.stats.credits = credits
