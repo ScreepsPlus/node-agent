@@ -2,7 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 const updateNotifier = require('update-notifier');
-const ScreepsAPI = require('screeps-api')
+const { ScreepsAPI } = require('screeps-api')
 const request = require('request')
 const editor = require('editor')
 const pkg = require('./package.json');
@@ -17,6 +17,7 @@ if(config)
 else
   setup()
 
+
 function start(){
   if(config.sampleConfig || !config.screeps || !config.service){
     console.log(file,"doe not have a valid config")
@@ -24,8 +25,8 @@ function start(){
   }
   if(config.checkForUpdates)
     updateNotifier({pkg}).notify();
-  api.auth(config.screeps.username,config.screeps.password,(res)=>{
-    console.log(res,'Authenticated')
+  api.auth(config.screeps.username,config.screeps.password).then((res)=>{
+    console.log('Authenticated')
     console.log('Using stats method',config.screeps.method)
     if(config.screeps.method == 'console')
       beginConsoleStats()
@@ -35,17 +36,13 @@ function start(){
 }
 
 function beginConsoleStats(){
-  api.socket()
-  api.on('message',msg=>{
-    if(msg.startsWith('auth ok')){
-      api.subscribe('/console')
-      console.log('subscribed to console')
-    }
+  api.socket.connect()
+  api.socket.on('connected',()=>{
+    api.socket.subscribe('console')    
   })
-  api.on('console',(raw)=>{
-    let [user,data] = raw
-    if(data.messages && data.messages.log)
-      data.messages.log
+  api.socket.on('console',(event)=>{
+    if(event.data.messages && event.data.messages.log)
+      event.data.messages.log
         .filter(l=>l.startsWith('STATS'))
         .forEach(log=>processStats(log))
   })
@@ -59,7 +56,7 @@ function formatStats(data){
     }
   let [header,type,tick,time,...stats] = data.split(";")
   if(type.startsWith('text')){
-    stats = stats.map(s=>`${s} ${time}`).join("\n")
+    stats = stats.map(s=>`${s} ${time}`).join("\n") + "\n"
   }
   return Promise.resolve({ header,type,tick,time,stats })
 }
@@ -70,8 +67,8 @@ function beginMemoryStats(){
 }
 function addProfileData(stats){
     return api.me().then(res=>{
-      let credits = res.body.credits || 0
-      let power = res.body.power || 0
+      let credits = res.money || 0
+      let power = res.power || 0
       if(stats.type == 'application/json'){
         stats.stats.credits = credits
         stats.stats.power = power
@@ -87,8 +84,8 @@ function addProfileData(stats){
 }
 function addLeaderboardData(stats){
     let leaderboardUrl = `/api/leaderboard/find?mode=world&username=${api.user.username}`;
-    return api.req('GET', leaderboardUrl).then(res=>{
-      let { rank, score } = res.body.list.slice(-1)[0];
+    return api.leaderboard.find(api.user.username,'world').then(res=>{
+      let { rank, score } = res.list.slice(-1)[0];
       if(stats.type == 'application/json'){
         stats.stats.leaderboard.rank = rank
         stats.stats.leaderboard.score = score
@@ -199,7 +196,7 @@ function loadConfig(){
     try{
       // console.log('Try',file)
       let config = require(file)
-      // console.log(config)
+      console.log(file)
       return { config, file }
     }catch(e){}
   }
