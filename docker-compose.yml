@@ -4,3 +4,5 @@ services:
     image: screepsplus-agent
     build: .
     restart: always
+    volumes:
+      - ./config.js:/config/config.js
