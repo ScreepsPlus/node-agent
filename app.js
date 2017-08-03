@@ -50,6 +50,7 @@ function beginConsoleStats(){
 }
 
 function formatStats(data){
+  if (data[0] === '{') data = JSON.parse(data)
   if(typeof data == 'object')
     return { 
       type: 'application/json',
@@ -118,9 +119,9 @@ function processStats(data){
 
 function getStats(){
     if(config.screeps.segment) {
-        return api.memory.segment.get(config.screeps.segment, config.screeps.shard).then(r=>r.data)
+        return api.memory.segment.get(config.screeps.segment, config.screeps.shard)
     } else {
-        return api.memory.get('stats',config.screeps.shard).then(r=>r.data)
+        return api.memory.get('stats',config.screeps.shard)
     }
 }
 
