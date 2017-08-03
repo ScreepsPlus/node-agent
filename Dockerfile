@@ -1,9 +1,9 @@
-FROM node:6-alpine
+FROM node:6.11-alpine
 WORKDIR /app
 RUN apk add --no-cache git
 ENV AGENT_CONFIG_PATH /config/config.js
 ENV DOCKER true
 ADD package.json /app
-#RUN npm install
+RUN yarn install
 ADD app.js .
-CMD ["npm","start"]
+CMD ["yarn","start"]
