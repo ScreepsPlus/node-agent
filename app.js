@@ -119,9 +119,9 @@ function processStats(data){
 
 function getStats(){
     if(config.screeps.segment) {
-        return api.memory.segment.get(config.screeps.segment, config.screeps.shard || 'shard0')
+        return api.memory.segment.get(config.screeps.segment, config.screeps.shard || 'shard0').then(r => r.data)
     } else {
-        return api.memory.get('stats', config.screeps.shard || 'shard0')
+        return api.memory.get('stats', config.screeps.shard || 'shard0').then(r => r.data)
     }
 }
 
