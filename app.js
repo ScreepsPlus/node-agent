@@ -41,6 +41,7 @@ function beginConsoleStats(){
     api.socket.subscribe('console')    
   })
   api.socket.on('console',(event)=>{
+    console.log(event)
     if(event.data.messages && event.data.messages.log)
       event.data.messages.log
         .filter(l=>l.startsWith('STATS'))
@@ -49,7 +50,7 @@ function beginConsoleStats(){
 }
 
 function formatStats(data){
-  if(data[0] == '{' || data[0] == '[')
+  if(typeof data == 'object')
     return { 
       type: 'application/json',
       stats: data
@@ -87,8 +88,7 @@ function addLeaderboardData(stats){
     return api.leaderboard.find(api.user.username,'world').then(res=>{
       let { rank, score } = res.list.slice(-1)[0];
       if(stats.type == 'application/json'){
-        stats.stats.leaderboard.rank = rank
-        stats.stats.leaderboard.score = score
+        stats.stats.leaderboard = { rank, score }
       }
       if(stats.type == 'text/grafana'){
         stats.stats += `leaderboard.rank ${rank} ${Date.now()}\n`
@@ -99,11 +99,11 @@ function addLeaderboardData(stats){
       return stats
     });
 }
-
+ 
 function tick(){
   Promise.resolve()
     .then(()=>console.log('Fetching Stats'))
-    .then(()=>api.memory.get('stats'))
+    .then(getStats)
     .then(processStats)
     .catch(err=>console.error(err))
 }
@@ -111,9 +111,17 @@ function tick(){
 function processStats(data){
   return Promise.resolve(data)
     .then(formatStats)
-    .then(addLeaderboardData)
     .then(addProfileData)
+    .then(addLeaderboardData)
     .then(pushStats)
+}
+
+function getStats(){
+    if(config.screeps.segment) {
+        return api.memory.segment.get(config.screeps.segment, config.screeps.shard).then(res=>JSON.parse(res.body.data))
+    } else {
+        return api.memory.get('stats',config.screeps.shard)
+    }
 }
 
 function pushStats(data){
@@ -182,7 +190,9 @@ function getConfigPaths(){
   if(process.platform == 'win32'){
     let dir = path.join(process.env.APPDATA,appname)
     try{ fs.mkdirSync(dir) }catch(e){}
-    fs.writeFileSync(path.join(dir,'config.js'),fs.readFileSync(path.join(__dirname,'config.js.sample')))
+    if(!fs.existsSync(path.join(dir,'config.js'))){
+      fs.writeFileSync(path.join(dir,'config.js'),fs.readFileSync(path.join(__dirname,'config.js.sample')))
+    }
     paths.push(path.join(dir,'config.js'))
   }
   create = ''
