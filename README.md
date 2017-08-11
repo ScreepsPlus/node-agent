@@ -35,6 +35,7 @@ To use with docker, just do the following:
 ```
 docker build -t screepsplus-agent .
 docker run -d \
+-v ./config.js:/config/config.js
 --restart=always \
 --name screepsplus-agent \
 screepsplus-agent
