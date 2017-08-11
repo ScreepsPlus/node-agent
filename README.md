@@ -34,11 +34,7 @@ screepsplus-agent
 To use with docker, just do the following:
 ```
 docker build -t screepsplus-agent .
-docker run -d \
--v ./config.js:/config/config.js
---restart=always \
---name screepsplus-agent \
-screepsplus-agent
+docker run -d -v $(pwd):/config/ --restart=always --name screepsplus-agent screepsplus-agent
 ```
 
 ### Docker-compose
