@@ -45,7 +45,7 @@ function beginConsoleStats(){
     if(event.data.messages && event.data.messages.log)
       event.data.messages.log
         .filter(l=>l.startsWith('STATS'))
-        .forEach(log=>processStats(log))
+        .forEach(log=>processStats(log.slice(6).replace(/;/,'\n')))
   })
 }
 
@@ -57,12 +57,12 @@ function formatStats (data) {
       stats: data
     }
   }
-  let [header, type, tick, time, ...stats] = data.split(';')
+  let [type, tick, time, ...stats] = data.split('\n')
   if (type.startsWith('text')) {
     stats = stats.map(s => `${s} ${time}`).join('\n') + '\n'
   }
   if (type === 'application/json') stats = JSON.parse(stats)
-  return Promise.resolve({ header, type, tick, time, stats })
+  return Promise.resolve({ type, tick, time, stats })
 }
 
 function beginMemoryStats(){
