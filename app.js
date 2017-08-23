@@ -45,7 +45,7 @@ function beginConsoleStats(){
     if(event.data.messages && event.data.messages.log)
       event.data.messages.log
         .filter(l=>l.startsWith('STATS'))
-        .forEach(log=>processStats(log.slice(6).replace(/;/,'\n')))
+        .forEach(log=>processStats(log.slice(6).replace(/;/g,'\n')))
   })
 }
 
