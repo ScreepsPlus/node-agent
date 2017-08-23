@@ -49,18 +49,20 @@ function beginConsoleStats(){
   })
 }
 
-function formatStats(data){
+function formatStats (data) {
   if (data[0] === '{') data = JSON.parse(data)
-  if(typeof data == 'object')
-    return { 
+  if (typeof data === 'object') {
+    return {
       type: 'application/json',
       stats: data
     }
-  let [header,type,tick,time,...stats] = data.split(";")
-  if(type.startsWith('text')){
-    stats = stats.map(s=>`${s} ${time}`).join("\n") + "\n"
   }
-  return Promise.resolve({ header,type,tick,time,stats })
+  let [header, type, tick, time, ...stats] = data.split(';')
+  if (type.startsWith('text')) {
+    stats = stats.map(s => `${s} ${time}`).join('\n') + '\n'
+  }
+  if (type === 'application/json') stats = JSON.parse(stats)
+  return Promise.resolve({ header, type, tick, time, stats })
 }
 
 function beginMemoryStats(){
