@@ -4,8 +4,14 @@ module.exports = {
 		username: 'screepsUsernameHere',
 		password: 'screepsPasswordHere',
 		method: 'memory.stats', // Valid Options: 'console' 'memory.stats'
-//		segment: 99 // Uncomment this line and specify segment id if you're placing stats into segment
-		shard: 'shard0'
+//		segment: 99, // Uncomment this line and specify segment id if you're placing stats into segment
+		shard: 'shard0',
+		connect: {
+			// For Private servers, uncomment the following:
+			// host: 'server1.screepspl.us',
+			// port: 21025,
+			// protocol: 'http'
+		}
 	},
 	service: {
 		url: 'https://screepspl.us',

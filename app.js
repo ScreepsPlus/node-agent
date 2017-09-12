@@ -6,7 +6,7 @@ const { ScreepsAPI } = require('screeps-api')
 const request = require('request')
 const editor = require('editor')
 const pkg = require('./package.json');
-let api = new ScreepsAPI()
+let api
 let setupRan = false
 
 if(process.argv[2] == 'test') process.exit(0) // Placeholder ;)
@@ -20,12 +20,13 @@ else
 
 function start(){
   if(config.sampleConfig || !config.screeps || !config.service){
-    console.log(file,"doe not have a valid config")
+    console.log(file, 'does not have a valid config')
     return setup()
   }
   if(config.checkForUpdates)
-    updateNotifier({pkg}).notify();
-  api.auth(config.screeps.username,config.screeps.password).then((res)=>{
+    updateNotifier({pkg}).notify()
+  api = new ScreepsAPI(config.screeps.connect)
+  api.auth(config.screeps.username, config.screeps.password).then((res)=>{
     console.log('Authenticated')
     console.log('Using stats method',config.screeps.method)
     if(config.screeps.method == 'console')
