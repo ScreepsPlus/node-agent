@@ -186,7 +186,7 @@ function getConfigPaths(){
     paths.push(process.env.AGENT_CONFIG_PATH)
   paths.push(path.join(__dirname,'config.js'))
   let create = ''
-  if(process.platform == 'linux'){
+  if(process.platform == 'linux' || process.platform == 'darwin'){
     create = `${process.env.HOME}/.${appname}`
     paths.push(create)
     paths.push(`/etc/${appname}/config.js`)
@@ -208,7 +208,7 @@ function loadConfig(){
   for(let i in paths){
     let file = paths[i]
     try{
-      // console.log('Try',file)
+      console.log('Try',file)
       let config = require(file)
       console.log(file)
       return { config, file }
