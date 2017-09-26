@@ -15,6 +15,10 @@ Node.js 6+
 2. Screeps Login info
 3. Node + NPM
 
+### Google Cloud Engine
+
+Bonzaiferroni has written a nice guide for setting up on the Google Cloud Engine free tier, check it out [here](https://github.com/bonzaiferroni/bonzAI/wiki/Screepspl.us-agent-with-Compute-Engine)
+
 ### NPM
 
 ```
