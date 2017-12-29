@@ -73,7 +73,7 @@ function formatStats (data) {
 
 function beginMemoryStats () {
   tick()
-  setInterval(tick, 15000)
+  setInterval(tick, config.screeps.segment ? 15000 : 60000)
 }
 function addProfileData (stats) {
   return api.me().then(res => {
