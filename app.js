@@ -32,10 +32,15 @@ function start () {
   // api.auth(config.screeps.username, config.screeps.password).then((res) => {
   // console.log('Authenticated')
   console.log('Using stats method', config.screeps.method)
+
+  shards = [].concat(config.screeps.shard)
+
   if (config.screeps.method === 'console') {
     beginConsoleStats()
   } else {
-    beginMemoryStats()
+    shards.forEach((shard) => {
+      beginMemoryStats(shard, shards)
+    })
   }
   // })
 }
@@ -71,9 +76,9 @@ function formatStats (data) {
   return Promise.resolve({ type, tick, time, stats })
 }
 
-function beginMemoryStats () {
-  tick()
-  setInterval(tick, config.screeps.segment ? 15000 : 60000)
+function beginMemoryStats (shard, shards) {
+  tick(shard)
+  setInterval(() => { tick(shard) }, config.screeps.segment ? (15000 * shards.length) : 60000)
 }
 function addProfileData (stats) {
   return api.me().then(res => {
@@ -107,10 +112,10 @@ function addLeaderboardData (stats) {
   })
 }
 
-function tick () {
+function tick (shard) {
   Promise.resolve()
     .then(() => console.log('Fetching Stats'))
-    .then(getStats)
+    .then(() => { return getStats(shard) })
     .then(processStats)
     .catch(err => console.error(err))
 }
@@ -123,11 +128,12 @@ function processStats (data) {
     .then(pushStats)
 }
 
-function getStats () {
+function getStats (shard) {
+  console.log('getting stats (' + shard + ')')
   if (config.screeps.segment) {
-    return api.memory.segment.get(config.screeps.segment, config.screeps.shard || 'shard0').then(r => r.data)
+    return api.memory.segment.get(config.screeps.segment, shard || 'shard0').then(r => r.data)
   } else {
-    return api.memory.get('stats', config.screeps.shard || 'shard0').then(r => r.data)
+    return api.memory.get('stats', shard || 'shard0').then(r => r.data)
   }
 }
 

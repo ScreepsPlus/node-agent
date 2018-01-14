@@ -4,7 +4,7 @@ module.exports = {
 		token: 'Your Screeps Auth token. Goto your screeps account > Auth Token to get one.',
 		method: 'memory.stats', // Valid Options: 'console' 'memory.stats'
 //		segment: 99, // Uncomment this line and specify segment id if you're placing stats into segment
-		shard: 'shard0',
+		shard: ['shard0'], // An array of shards to pull data from.
 		connect: {
 			// For Private servers, uncomment the following:
 			// host: 'server1.screepspl.us',
