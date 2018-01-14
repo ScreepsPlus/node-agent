@@ -33,7 +33,7 @@ function start () {
   // console.log('Authenticated')
   console.log('Using stats method', config.screeps.method)
 
-  shards = [].concat(config.screeps.shard)
+  const shards = [].concat(config.screeps.shard)
 
   if (config.screeps.method === 'console') {
     beginConsoleStats()
@@ -114,7 +114,7 @@ function addLeaderboardData (stats) {
 
 function tick (shard) {
   Promise.resolve()
-    .then(() => console.log('Fetching Stats'))
+    .then(() => console.log('Fetching Stats (' + shard + ')'))
     .then(() => { return getStats(shard) })
     .then(processStats)
     .catch(err => console.error(err))
@@ -129,7 +129,6 @@ function processStats (data) {
 }
 
 function getStats (shard) {
-  console.log('getting stats (' + shard + ')')
   if (config.screeps.segment) {
     return api.memory.segment.get(config.screeps.segment, shard || 'shard0').then(r => r.data)
   } else {
