@@ -14,22 +14,32 @@ if (process.argv[2] == 'test') process.exit(0) // Placeholder ;)
 let {file, config} = loadConfig()
 if (config) { start() } else { setup() }
 
-function start () {
+async function start () {
   if (config.sampleConfig || !config.screeps || !config.service) {
     console.log(file, 'does not have a valid config')
     return setup()
   }
   if (config.checkForUpdates) { updateNotifier({pkg}).notify() }
+  let ps = config.screeps.connect && config.screeps.connect.host
   api = new ScreepsAPI(config.screeps.connect)
-  if (config.screeps.username) {
+  if (!ps && config.screeps.username) {
     console.log(`Update your config (${file}) to use auth tokens instead of username. http://blog.screeps.com/2017/12/auth-tokens/`)
     console.log(`ex: {`)
     console.log(`       token: "yourToken"`)
     console.log(`    }`)
     process.exit()
   }
-  api.token = config.screeps.token
-  // api.auth(config.screeps.username, config.screeps.password).then((res) => {
+  if (ps) {
+    try {
+      await api.auth(config.screeps.username, config.screeps.password)
+    } catch (e) {
+      console.log(`Authentication failed for user ${config.screeps.username} on ${api.opts.url}`)
+      console.log('Check your config.js and try again')
+      process.exit()
+    }
+  } else {
+    api.token = config.screeps.token
+  }
   // console.log('Authenticated')
   console.log('Using stats method', config.screeps.method)
 
@@ -120,12 +130,15 @@ function tick (shard) {
     .catch(err => console.error(err))
 }
 
-function processStats (data) {
-  return Promise.resolve(data)
-    .then(formatStats)
-    .then(addProfileData)
-    .then(addLeaderboardData)
-    .then(pushStats)
+async function processStats (data) {
+  data = await formatStats(data)
+  if (config.includeProfileData) {
+    data = await addProfileData(data)
+  }
+  if (config.includeLeaderboard) {
+    data = await addLeaderboardData(data)
+  }
+  pushStats(data)
 }
 
 function getStats (shard) {

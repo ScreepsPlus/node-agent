@@ -5,17 +5,20 @@ module.exports = {
 		method: 'memory.stats', // Valid Options: 'console' 'memory.stats'
 //		segment: 99, // Uncomment this line and specify segment id if you're placing stats into segment
 		shard: ['shard0'], // An array of shards to pull data from.
+		// username: 'username', // uncomment these for Private Servers
+		// password: 'password', 
 		connect: {
-			// For Private servers, uncomment the following:
-			// host: 'server1.screepspl.us',
-			// port: 21025,
-			// protocol: 'http'
+			// For Private servers, uncomment and edit the following:
+			// host: 'server1.screepspl.us:443',
+			// protocol: 'https'
 		}
 	},
 	service: {
 		url: 'https://screepspl.us',
 		token: 'apitoken'	// Token supplied upon account creation
 	},
+	includeLeaderboard: true,
+	includeProfileData: true, // This pulls credits and power, note this also requires a full access token
 	checkForUpdates: true,
 	showRawStats: false, // This dumps stats to console on every push if enabled
 	sampleConfig: true // REMOVE THIS LINE BEFORE RUNNING
