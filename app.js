@@ -88,7 +88,7 @@ function formatStats (data) {
 
 function beginMemoryStats (shard, shards) {
   tick(shard)
-  setInterval(() => { tick(shard) }, config.screeps.segment ? (15000 * shards.length) : 60000)
+  setInterval(() => { tick(shard) }, config.screeps.segment !== undefined ? (15000 * shards.length) : 60000)
 }
 function addProfileData (stats) {
   return api.me().then(res => {
