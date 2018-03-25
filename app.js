@@ -142,7 +142,7 @@ async function processStats (data) {
 }
 
 function getStats (shard) {
-  if (config.screeps.segment) {
+  if (config.screeps.segment !== undefined) {
     return api.memory.segment.get(config.screeps.segment, shard || 'shard0').then(r => r.data)
   } else {
     return api.memory.get('stats', shard || 'shard0').then(r => r.data)
