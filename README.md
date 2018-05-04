@@ -5,7 +5,7 @@
 [![Circle CI](https://circleci.com/gh/ScreepsPlus/node-agent.svg?style=shield)](https://circleci.com/gh/ScreepsPlus/node-agent)
 
 ## Requirements
-Node.js 6+ 
+Node.js 8+ 
 
 ## Setup
 
