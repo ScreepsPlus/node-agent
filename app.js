@@ -5,13 +5,61 @@ const updateNotifier = require('update-notifier')
 const { ScreepsAPI } = require('screeps-api')
 const request = require('request')
 const editor = require('editor')
+const args = require('commander')
 const pkg = require('./package.json')
 let api
 let setupRan = false
 
+args
+  .version(pkg.version)
+  .option('-u, --username <username>', 'Private Server Username')
+  .option('-p, --password <password>', 'Private Server Password')
+  .option('-t, --token <token>', 'Screeps Auth Token')
+  .option('--shard <shard>', 'Shard (comma seperated for multiple)')
+  .option('-s, --segment <id>', 'Use Segment ID for stats')
+  .option('-m, --memory', 'Use Memory for stats (default)')
+  .option('-c, --console', 'Use console for stats')
+  .option('-a, --sptoken <token>', 'ScreepsPl.us token')
+  .option('--host <host>', 'Private Server host and port (ex: host:port)')
+  .option('--https', 'Use HTTPS for Private Server')
+  .option('--no-updatecheck', 'Skip check for updates')
+  .option('-v, --verbose', 'Verbose')
+  .parse(process.argv)
+
 if (process.argv[2] == 'test') process.exit(0) // Placeholder ;)
 
 let {file, config} = loadConfig()
+if (args.username || args.password || args.token || args.segment || args.memory || args.console || args.host || args.https) {
+  config = config || {}
+  config.screeps = config.screeps || { method: 'memory' }
+  if (args.username) config.screeps.username = args.username
+  if (args.password) config.screeps.password = args.password
+  if (args.token) config.screeps.token = args.token
+  if (args.segment) config.screeps.segment = args.segment
+  if (args.memory) config.screeps.method = 'memory'
+  if (args.console) config.screeps.method = 'console'
+  if (args.shard) config.screeps.shard = args.shard.split(',')
+  if (args.segment) {
+    config.screeps.method = 'memory'
+    config.screeps.segment = args.segment
+  }
+  if (args.host || args.https) {
+    config.screeps.connect = config.screeps.connect || { protocol: 'http' }
+    if (args.host) config.screeps.connect.host = args.host
+    if (args.https) config.screeps.connect.protocol = args.https ? 'https' : 'http'
+  }
+}
+if (args.sptoken) {
+  config = config || {}
+  config.service = config.service || { url: 'https://screepspl.us' }
+  config.service.token = args.sptoken
+}
+if (args.verbose) {
+  config.showRawStats = !!args.verbose
+}
+if (config) {
+  config.checkForUpdates = config.checkForUpdates && args.updatecheck
+}
 if (config) { start() } else { setup() }
 
 async function start () {

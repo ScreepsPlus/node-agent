@@ -36,16 +36,60 @@ screepsplus-agent
 ### Docker
 
 To use with docker, just do the following:
+With Config:
+```
+docker run -d -v $(pwd):/config --restart=unless-stopped screepsplus-agent
+```
+With CLI: (See Config section below for full argument list)
+```
+docker run -d --restart=unless-stopped screepsplus-agent --token <screepsToken> --sptoken <screepsPlusToken>
+```
+
+or build your own image:
 ```
 docker build -t screepsplus-agent .
-docker run -d -v $(pwd):/config/ --restart=always --name screepsplus-agent screepsplus-agent
+docker run -d -v $(pwd):/config/ --restart=always screepsplus-agent
 ```
 
 ### Docker-compose
 A docker-compose.yml is included.
 
-### Config Methods
-It is now possible to use the console to output stats, just set method to 'console' in config.js
+### Config
+
+Config is done via a config file or cli arguments.
+On start it will search for configs in several locations:
+
+* Manually Specified via ENV variable (AGENT_CONFIG_PATH)
+* App directory (config.js)
+* Home directory (~/.screepsplus-agent) (Mac, Linux)
+* Etc directory (/etc/screepsplus-agent/config.js) (Mac, Linux)
+* App Data (%APPDATA%/screepsplus-agent/config.js) (Windows)
+
+On windows, it will write a sample config to appdata if no config is found.
+
+All CLI options override the matching config option
+CLI Usage:
+```
+  Usage: app [options]
+
+  Options:
+
+    -V, --version              output the version number
+    -u, --username <username>  Private Server Username
+    -p, --password <password>  Private Server Password
+    -t, --token <token>        Screeps Auth Token
+    -s, --segment <id>         Use Segment ID for stats
+    -m, --memory               Use Memory for stats (default)
+    -c, --console              Use console for stats
+    -a, --sptoken <token>      ScreepsPl.us token
+    --host <host>              Private Server host and port (ex: host:port)
+    --https                    Use HTTPS for Private Server
+    --no-updatecheck           Skip check for updates
+    -v                         Verbose
+    -h, --help                 output usage information
+```
+
+It also possible to use the console to output stats, just set method to `console` in `config.js` or pass `--console` on the CLI
 and use `console.log('STATS;'+formattedStats)`
 
 For this to work, type based format is REQUIRED
