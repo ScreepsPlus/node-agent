@@ -200,6 +200,7 @@ function getStats (shard) {
 function pushStats (data) {
   let {type, stats} = data
   if (!stats) return console.log('No stats found, is Memory.stats defined?')
+  if (config.prefix) stats = {[config.prefix]: stats};
   if (config.showRawStats) console.log('Stats:', JSON.stringify(stats, null, 3))
   console.log('Pushing stats')
   let sconfig = config.service

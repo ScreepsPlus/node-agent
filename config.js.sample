@@ -6,13 +6,14 @@ module.exports = {
 //		segment: 99, // Uncomment this line and specify segment id if you're placing stats into segment
 		shard: ['shard0'], // An array of shards to pull data from.
 		// username: 'username', // uncomment these for Private Servers
-		// password: 'password', 
+		// password: 'password',
 		connect: {
 			// For Private servers, uncomment and edit the following:
 			// host: 'server1.screepspl.us:443',
 			// protocol: 'https'
 		}
 	},
+	// prefix: 'mmo', // uncomment this to prefix your data
 	service: {
 		url: 'https://screepspl.us',
 		token: 'apitoken'	// Token supplied upon account creation
