@@ -154,9 +154,8 @@ function addProfileData (stats) {
     return stats
   })
 }
-function addLeaderboardData (stats) {
-  let leaderboardUrl = `/api/leaderboard/find?mode=world&username=${api.user.username}`
-  return api.leaderboard.find(api.user.username, 'world').then(res => {
+function addLeaderboardData (me, stats) {
+  return api.leaderboard.find(me.username, 'world').then(res => {
     let { rank, score } = res.list.slice(-1)[0]
     if (stats.type == 'application/json') {
       stats.stats.leaderboard = { rank, score }
@@ -165,7 +164,7 @@ function addLeaderboardData (stats) {
       stats.stats += `leaderboard.rank ${rank} ${Date.now()}\n`
       stats.stats += `leaderboard.score ${score} ${Date.now()}\n`
     }
-    if (stats.type == 'text/influxdb') { stats.stats += `leaderboard,user=${api.user.username} rank=${rank},score=${score} ${Date.now()}\n` }
+    if (stats.type == 'text/influxdb') { stats.stats += `leaderboard,user=${me.username} rank=${rank},score=${score} ${Date.now()}\n` }
     return stats
   })
 }
@@ -184,7 +183,7 @@ async function processStats (data) {
     data = await addProfileData(data)
   }
   if (config.includeLeaderboard) {
-    data = await addLeaderboardData(data)
+    data = await api.me().then(me => addLeaderboardData(me, data))
   }
   pushStats(data)
 }
