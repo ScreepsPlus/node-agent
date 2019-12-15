@@ -150,7 +150,7 @@ function addProfileData (stats) {
       stats.stats += `credits ${credits} ${Date.now()}\n`
       stats.stats += `power ${power} ${Date.now()}\n`
     }
-    if (stats.type == 'text/influxdb') { stats.stats += `profile,user=${api.user.username} credits=${credits},power=${power} ${Date.now()}\n` }
+    if (stats.type == 'text/influxdb') { stats.stats += `profile,user=${res.username} credits=${credits},power=${power} ${Date.now()}\n` }
     return stats
   })
 }
