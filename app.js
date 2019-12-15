@@ -139,7 +139,7 @@ function beginMemoryStats (shard, shards) {
   setInterval(() => { tick(shard) }, config.screeps.segment !== undefined ? (15000 * shards.length) : 60000)
 }
 function addProfileData (stats) {
-  return api.me().then(res => {
+  return api.raw.auth.me().then(res => {
     let credits = res.money || 0
     let power = res.power || 0
     if (stats.type == 'application/json') {
@@ -150,7 +150,7 @@ function addProfileData (stats) {
       stats.stats += `credits ${credits} ${Date.now()}\n`
       stats.stats += `power ${power} ${Date.now()}\n`
     }
-    if (stats.type == 'text/influxdb') { stats.stats += `profile,user=${api.user.username} credits=${credits},power=${power} ${Date.now()}\n` }
+    if (stats.type == 'text/influxdb') { stats.stats += `profile,user=${res.username} credits=${credits},power=${power} ${Date.now()}\n` }
     return stats
   })
 }
