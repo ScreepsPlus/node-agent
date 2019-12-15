@@ -1,6 +1,6 @@
 {
   "name": "screepsplus-agent",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "description": "",
   "main": "app.js",
   "repository": "https://github.com/ScreepsPlus/node-agent",
