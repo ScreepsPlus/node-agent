@@ -154,21 +154,23 @@ function addProfileData (stats) {
     return stats
   })
 }
-function addLeaderboardData (me, stats) {
-  return api.leaderboard.find(me.username, 'world').then(res => {
+function addLeaderboardData (me, stats, board) {
+  return api.leaderboard.find(me.username, board).then(res => {
+    let boardName = board == 'world' ? 'leaderboard' : `leaderboard_${board}`
     let { rank, score } = res.list.slice(-1)[0]
     if (stats.type == 'application/json') {
-      stats.stats.leaderboard = { rank, score }
+      stats.stats[boardName] = { rank, score }
     }
     if (stats.type == 'text/grafana') {
-      stats.stats += `leaderboard.rank ${rank} ${Date.now()}\n`
-      stats.stats += `leaderboard.score ${score} ${Date.now()}\n`
+      stats.stats += `${boardName}.rank ${rank} ${Date.now()}\n`
+      stats.stats += `${boardName}.score ${score} ${Date.now()}\n`
     }
-    if (stats.type == 'text/influxdb') { stats.stats += `leaderboard,user=${me.username} rank=${rank},score=${score} ${Date.now()}\n` }
+    if (stats.type == 'text/influxdb') { 
+      stats.stats += `${boardName},user=${me.username} rank=${rank},score=${score} ${Date.now()}\n`
+    }
     return stats
   })
 }
-
 function tick (shard) {
   Promise.resolve()
     .then(() => console.log('Fetching Stats (' + shard + ')'))
@@ -183,7 +185,8 @@ async function processStats (data) {
     data = await addProfileData(data)
   }
   if (config.includeLeaderboard) {
-    data = await api.me().then(me => addLeaderboardData(me, data))
+    data = await api.me().then(me => addLeaderboardData(me, data, 'world'))
+    data = await api.me().then(me => addLeaderboardData(me, data, 'power'))
   }
   pushStats(data)
 }
